@@ -4,7 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fonte global */
-body {
+/* Correções globais */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #0f172a; /* Fundo escuro padrão */
   font-family: 'Inter', sans-serif;
+  color: white;
 }
