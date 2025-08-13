@@ -1,37 +1,45 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Admin() {
   const [session, setSession] = useState(null);
   const [projects, setProjects] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => setSession(sess));
+    // Verifica a sessão do usuário logado
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      if (!data.session) {
+        // Se não estiver autenticado, redireciona para a página de login
+        navigate("/login");
+      }
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess);
+      if (!sess) {
+        // Redireciona para login caso a sessão seja perdida
+        navigate("/login");
+      }
+    });
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     if (!session) return;
-    supabase.from("projects").select("*").order("updated_at", { ascending: false })
+    // Carregar projetos do banco de dados
+    supabase
+      .from("projects")
+      .select("*")
+      .order("updated_at", { ascending: false })
       .then(({ data, error }) => {
         if (!error) setProjects(data || []);
       });
   }, [session]);
 
   if (!session) {
-    return (
-      <div className="max-w-md mx-auto mt-20 text-center">
-        <h1 className="text-2xl font-bold">Login do Editor</h1>
-        <button
-          className="mt-6 px-4 py-2 border rounded"
-          onClick={() => supabase.auth.signInWithOAuth({ provider: "google" })}
-        >
-          Entrar com Google
-        </button>
-      </div>
-    );
+    return <div>Carregando...</div>; // Mostrar um estado de carregamento enquanto verifica a sessão
   }
 
   return (
@@ -55,9 +63,13 @@ export default function Admin() {
           <li key={p.id} className="py-4 flex justify-between">
             <div>
               <h2 className="font-medium">{p.title}</h2>
-              <p className="text-sm text-gray-600">{p.slug} · {p.visibility}</p>
+              <p className="text-sm text-gray-600">
+                {p.slug} · {p.visibility}
+              </p>
             </div>
-            <Link to={`/admin/edit/${p.id}`} className="underline">Editar</Link>
+            <Link to={`/admin/edit/${p.id}`} className="underline">
+              Editar
+            </Link>
           </li>
         ))}
       </ul>

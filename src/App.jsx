@@ -5,7 +5,7 @@ import Home from "./pages/Home";
 import Projects from "./pages/Projects";
 import EditProject from "./pages/EditProject"; // se quiser manter
 import Footer from "./components/Footer";
-
+import Login from "./pages/Login";
 // futuras
 import Translations from "./pages/Translations";
 import Revisions from "./pages/Revisions";
@@ -23,6 +23,7 @@ export default function App() {
         <Routes>
           {/* públicas */}
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/translations" element={<Translations />} />
           <Route path="/revisions" element={<Revisions />} />

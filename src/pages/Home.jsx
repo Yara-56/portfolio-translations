@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import AOS from "aos";
@@ -11,7 +10,9 @@ const TABS = ["introducao", "traducoes", "revisoes", "servicos", "projetos"];
 export default function Home() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const initialTab = TABS.includes(params.get("tab") || "") ? params.get("tab") : "introducao";
+  const initialTab = TABS.includes(params.get("tab") || "")
+    ? params.get("tab")
+    : "introducao";
 
   const [activeSection, setActiveSection] = useState(initialTab);
   const [featured, setFeatured] = useState([]);
@@ -58,7 +59,9 @@ export default function Home() {
       setLoadingFeat(false);
     };
     load();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   // Mensagens de cada aba + CTA
@@ -112,6 +115,17 @@ export default function Home() {
     </Link>
   );
 
+  // Função para redirecionar para o login (se não estiver autenticado)
+  const handleAdminLogin = () => {
+    // Verifica se o usuário está logado
+    const session = supabase.auth.session();
+    if (!session) {
+      navigate("/login"); // Redireciona para a página de login
+    } else {
+      navigate("/admin"); // Se já estiver logado, vai para o painel de admin
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white overflow-hidden">
       {/* Fundo decorativo */}
@@ -130,13 +144,22 @@ export default function Home() {
           </h1>
 
           <p className="text-gray-300 text-lg mb-8 leading-relaxed">
-            Bem-vindo ao meu portfólio. Aqui você encontra meu trabalho como tradutor,
-            versor, revisor e pesquisador em Línguas Modernas. Tradução não é apenas
-            transpor palavras — é recriar sentidos, estilo e intenção.
+            Bem-vindo ao meu portfólio. Aqui você encontra meu trabalho como
+            tradutor, versor, revisor e pesquisador em Línguas Modernas.
+            Tradução não é apenas transpor palavras — é recriar sentidos, estilo
+            e intenção.
           </p>
 
+          {/* Botão de login do Admin */}
+          <button
+            onClick={handleAdminLogin}
+            className="px-6 py-3 mt-6 bg-yellow-400 text-black rounded-full font-semibold hover:bg-yellow-500 transition-all"
+          >
+            Acessar área de Administração
+          </button>
+
           {/* Navegação por abas */}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 mt-6">
             {[
               { key: "traducoes", label: "Traduções e Versões" },
               { key: "revisoes", label: "Revisões e Edições" },
@@ -149,7 +172,11 @@ export default function Home() {
                   key={b.key}
                   onClick={() => setTab(b.key)}
                   className={`font-semibold px-5 py-2 rounded-full shadow-md transition
-                    ${active ? "bg-yellow-400 text-black" : "bg-yellow-500 hover:bg-yellow-400 text-black"}`}
+                    ${
+                      active
+                        ? "bg-yellow-400 text-black"
+                        : "bg-yellow-500 hover:bg-yellow-400 text-black"
+                    }`}
                   aria-pressed={active}
                 >
                   {b.label}
@@ -175,9 +202,16 @@ export default function Home() {
         </div>
 
         {/* Foto */}
-        <div className="flex justify-center md:justify-end" data-aos="fade-left">
+        <div
+          className="flex justify-center md:justify-end"
+          data-aos="fade-left"
+        >
           <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-yellow-400 shadow-xl">
-            <img src={fotoCauan} alt="Cauan Lacerda" className="w-full h-full object-cover" />
+            <img
+              src={fotoCauan}
+              alt="Cauan Lacerda"
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
       </main>
@@ -186,13 +220,18 @@ export default function Home() {
       <section className="relative z-10 px-4 w-full max-w-6xl mx-auto pb-16">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">Destaques</h2>
-          <Link to="/projects" className="text-yellow-400 hover:underline">Ver todos</Link>
+          <Link to="/projects" className="text-yellow-400 hover:underline">
+            Ver todos
+          </Link>
         </div>
 
         {loadingFeat && (
           <div className="grid gap-4 md:grid-cols-2">
             {[1, 2].map((i) => (
-              <div key={i} className="h-48 rounded-xl bg-white/10 animate-pulse" />
+              <div
+                key={i}
+                className="h-48 rounded-xl bg-white/10 animate-pulse"
+              />
             ))}
           </div>
         )}
@@ -207,7 +246,9 @@ export default function Home() {
 
         {!loadingFeat && featured.length > 0 && (
           <div className="grid gap-6 md:grid-cols-2">
-            {featured.map((item) => <Card key={item.id} item={item} />)}
+            {featured.map((item) => (
+              <Card key={item.id} item={item} />
+            ))}
           </div>
         )}
       </section>
