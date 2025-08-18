@@ -115,17 +115,6 @@ export default function Home() {
     </Link>
   );
 
-  // Função para redirecionar para o login (se não estiver autenticado)
-  const handleAdminLogin = () => {
-    // Verifica se o usuário está logado
-    const session = supabase.auth.session();
-    if (!session) {
-      navigate("/login"); // Redireciona para a página de login
-    } else {
-      navigate("/admin"); // Se já estiver logado, vai para o painel de admin
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white overflow-hidden">
       {/* Fundo decorativo */}
@@ -134,7 +123,7 @@ export default function Home() {
         <div className="w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-2xl animate-pulse absolute bottom-20 right-0" />
       </div>
 
-      {/* Conteúdo */}
+      {/* Conteúdo principal */}
       <main className="relative z-10 px-4 w-full max-w-6xl mx-auto flex-grow py-24 grid grid-cols-1 md:grid-cols-2 items-center gap-10">
         {/* Texto de apresentação */}
         <div data-aos="fade-right">
@@ -149,14 +138,6 @@ export default function Home() {
             Tradução não é apenas transpor palavras — é recriar sentidos, estilo
             e intenção.
           </p>
-
-          {/* Botão de login do Admin */}
-          <button
-            onClick={handleAdminLogin}
-            className="px-6 py-3 mt-6 bg-yellow-400 text-black rounded-full font-semibold hover:bg-yellow-500 transition-all"
-          >
-            Acessar área de Administração
-          </button>
 
           {/* Navegação por abas */}
           <div className="flex flex-wrap gap-3 mt-6">

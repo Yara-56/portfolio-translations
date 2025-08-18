@@ -7,6 +7,12 @@ import {
 } from "react-icons/fa";
 
 export default function Footer() {
+  const handleAdminLogin = () => {
+    // Lógica para redirecionamento de admin
+    // Você pode usar aqui a navegação ou lógica que preferir
+    alert("Configurações");
+  };
+
   return (
     <footer className="bg-[#0f172a] text-gray-400 py-10 mt-0 border-t border-gray-700">
       <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -56,6 +62,16 @@ export default function Footer() {
             <FaWhatsapp />
           </a>
         </div>
+      </div>
+
+      {/* Botão de configurações */}
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={handleAdminLogin}
+          className="px-6 py-3 bg-yellow-400 text-black rounded-full font-semibold hover:bg-yellow-500 transition-all"
+        >
+          Configurações
+        </button>
       </div>
     </footer>
   );
