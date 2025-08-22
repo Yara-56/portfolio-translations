@@ -18,6 +18,9 @@ export default function Home() {
   const [featured, setFeatured] = useState([]);
   const [loadingFeat, setLoadingFeat] = useState(true);
   const [errorFeat, setErrorFeat] = useState("");
+  const [translations, setTranslations] = useState([]);
+  const [selectedTranslation, setSelectedTranslation] = useState(null);
+  const [loadingTranslations, setLoadingTranslations] = useState(true);
 
   // AOS
   useEffect(() => {
@@ -36,27 +39,23 @@ export default function Home() {
     setParams(next, { replace: true });
   };
 
-  // Busca destaques (projects.featured == true) no Supabase
+  // Busca traduções no Supabase
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      setLoadingFeat(true);
-      setErrorFeat("");
+      setLoadingTranslations(true);
       const { data, error } = await supabase
-        .from("projects")
-        .select("id, slug, title, type, languages, categories, cover_url, date")
-        .eq("visibility", "public")
-        .eq("featured", true)
-        .order("date", { ascending: false })
-        .limit(4);
+        .from("translations")
+        .select("id, title, content")
+        .order("created_at", { ascending: false });
       if (!alive) return;
       if (error) {
-        setErrorFeat("Não foi possível carregar os destaques agora.");
-        setFeatured([]);
+        console.error("Erro ao carregar as traduções:", error);
+        setTranslations([]);
       } else {
-        setFeatured(data || []);
+        setTranslations(data || []);
       }
-      setLoadingFeat(false);
+      setLoadingTranslations(false);
     };
     load();
     return () => {
@@ -69,28 +68,23 @@ export default function Home() {
     switch (activeSection) {
       case "traducoes":
         return {
-          text: "Aqui estarão as traduções e versões realizadas por Cauan.",
-          cta: { label: "Ver traduções e versões", to: "/translations" },
+          text: "Aqui estarão as traduções e versões realizadas por Cauan. Clique em um título para ver o texto completo.",
         };
       case "revisoes":
         return {
           text: "Aqui estarão as revisões e edições literárias, técnicas e acadêmicas.",
-          cta: { label: "Ver revisões e edições", to: "/revisions" },
         };
       case "servicos":
         return {
           text: "Aqui estarão os serviços oferecidos, com prazos, valores e formas de contratação.",
-          cta: { label: "Ver serviços", to: "/services" },
         };
       case "projetos":
         return {
           text: "Aqui estarão os projetos, ensaios, vídeos e conteúdos autorais do Cauan.",
-          cta: { label: "Ver todos os projetos", to: "/projects" },
         };
       default:
         return {
           text: "",
-          cta: null,
         };
     }
   }, [activeSection]);
@@ -166,33 +160,47 @@ export default function Home() {
             })}
           </div>
 
-          {/* Seção dinâmica */}
-          {sectionContent.text && (
+          {/* Seção de Traduções */}
+          {activeSection === "traducoes" && (
             <div className="mt-6">
               <p className="text-gray-300">{sectionContent.text}</p>
-              {sectionContent.cta && (
-                <button
-                  onClick={() => navigate(sectionContent.cta.to)}
-                  className="mt-4 px-4 py-2 rounded-full border border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black transition"
-                >
-                  {sectionContent.cta.label}
-                </button>
+              {loadingTranslations ? (
+                <p>Carregando traduções...</p>
+              ) : (
+                <div className="mt-4">
+                  {translations.length > 0 ? (
+                    <ul className="space-y-2">
+                      {translations.map((translation) => (
+                        <li
+                          key={translation.id}
+                          className="cursor-pointer hover:text-yellow-400"
+                          onClick={() => setSelectedTranslation(translation)}
+                        >
+                          {translation.title}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-300">Nenhuma tradução disponível.</p>
+                  )}
+                </div>
+              )}
+              {selectedTranslation && (
+                <div className="mt-4">
+                  <h3 className="text-xl font-bold text-yellow-400">
+                    {selectedTranslation.title}
+                  </h3>
+                  <p className="text-gray-300 mt-2">{selectedTranslation.content}</p>
+                </div>
               )}
             </div>
           )}
         </div>
 
         {/* Foto */}
-        <div
-          className="flex justify-center md:justify-end"
-          data-aos="fade-left"
-        >
+        <div className="flex justify-center md:justify-end" data-aos="fade-left">
           <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-yellow-400 shadow-xl">
-            <img
-              src={fotoCauan}
-              alt="Cauan Lacerda"
-              className="w-full h-full object-cover"
-            />
+            <img src={fotoCauan} alt="Cauan Lacerda" className="w-full h-full object-cover" />
           </div>
         </div>
       </main>
