@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // quando abre o site, lê do localStorage
+    // Quando abre o site, lê do localStorage
     const saved = localStorage.getItem("isAdmin");
     setIsAdmin(saved === "true");
   }, []);
@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
       setIsAdmin(true);
       return { success: true };
     }
-    return { success: false, error: "Senha incorreta" };
+    return { success: false, error: "Senha incorreta, tente novamente." };
   }
 
   function signOut() {

@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import AOS from "aos";
@@ -13,16 +12,31 @@ import InlineServiceForm from "../components/InlineServiceForm";
 import InlineProjectForm from "../components/InlineProjectForm";
 import InlineVideoForm from "../components/InlineVideoForm";
 
-const TABS = ["introducao", "traducoes", "revisoes", "servicos", "projetos", "videos"];
+const TABS = [
+  "introducao",
+  "traducoes",
+  "revisoes",
+  "servicos",
+  "projetos",
+  "videos",
+];
 
 export default function Home() {
-  const { isAdmin } = useAuth();
+  const auth = useAuth(); // Chama o hook useAuth
+  console.log("Resultado de useAuth:", auth); // Adiciona o console.log para verificar o que está retornando
+
+  const { isAdmin } = auth || { isAdmin: false }; 
+
   const [params, setParams] = useSearchParams();
 
   // ---- Tabs / URL sync ------------------------------------------------------
-  const initialTab = TABS.includes(params.get("tab") || "") ? params.get("tab") : "introducao";
+  const initialTab = TABS.includes(params.get("tab") || "")
+    ? params.get("tab")
+    : "introducao";
   const [activeSection, setActiveSection] = useState(initialTab);
-  useEffect(() => { setActiveSection(initialTab); }, [initialTab]);
+  useEffect(() => {
+    setActiveSection(initialTab);
+  }, [initialTab]);
 
   const setTab = (tab) => {
     const next = new URLSearchParams(params);
@@ -32,7 +46,9 @@ export default function Home() {
   };
 
   // ---- AOS ------------------------------------------------------------------
-  useEffect(() => { AOS.init({ duration: 800, once: true }); }, []);
+  useEffect(() => {
+    AOS.init({ duration: 800, once: true });
+  }, []);
 
   // ---- Destaques (projects) -------------------------------------------------
   const [featured, setFeatured] = useState([]);
@@ -47,7 +63,9 @@ export default function Home() {
       try {
         resp = await supabase
           .from("projects")
-          .select("id, slug, title, cover_url, type, languages, categories, updated_at")
+          .select(
+            "id, slug, title, cover_url, type, languages, categories, updated_at"
+          )
           .order("updated_at", { ascending: false })
           .limit(6);
       } catch {
@@ -88,7 +106,9 @@ export default function Home() {
     else setTranslations(resp.data || []);
     setLoadingTranslations(false);
   }
-  useEffect(() => { reloadTranslations(); }, []);
+  useEffect(() => {
+    reloadTranslations();
+  }, []);
 
   // ---- Revisões -------------------------------------------------------------
   const [revisions, setRevisions] = useState([]);
@@ -111,7 +131,9 @@ export default function Home() {
     else setRevisions(resp.data || []);
     setLoadingRevisions(false);
   }
-  useEffect(() => { reloadRevisions(); }, []);
+  useEffect(() => {
+    reloadRevisions();
+  }, []);
 
   // ---- Serviços -------------------------------------------------------------
   const [services, setServices] = useState([]);
@@ -134,7 +156,9 @@ export default function Home() {
     else setServices(resp.data || []);
     setLoadingServices(false);
   }
-  useEffect(() => { reloadServices(); }, []);
+  useEffect(() => {
+    reloadServices();
+  }, []);
 
   // ---- Projetos -------------------------------------------------------------
   const [projects, setProjects] = useState([]);
@@ -146,7 +170,9 @@ export default function Home() {
     try {
       resp = await supabase
         .from("projects")
-        .select("id, slug, title, cover_url, type, languages, categories, updated_at")
+        .select(
+          "id, slug, title, cover_url, type, languages, categories, updated_at"
+        )
         .order("updated_at", { ascending: false })
         .limit(20);
     } catch {
@@ -158,7 +184,9 @@ export default function Home() {
     else setProjects(resp.data || []);
     setLoadingProjects(false);
   }
-  useEffect(() => { reloadProjects(); }, []);
+  useEffect(() => {
+    reloadProjects();
+  }, []);
 
   // ---- Vídeos ---------------------------------------------------------------
   const [videos, setVideos] = useState([]);
@@ -182,21 +210,31 @@ export default function Home() {
     else setVideos(resp.data || []);
     setLoadingVideos(false);
   }
-  useEffect(() => { reloadVideos(); }, []);
+  useEffect(() => {
+    reloadVideos();
+  }, []);
 
   // ---- Copy de cada aba -----------------------------------------------------
   const sectionContent = useMemo(() => {
     switch (activeSection) {
       case "traducoes":
-        return { text: "Aqui estarão as traduções e versões realizadas por Cauan. Clique em um título para ver o texto completo." };
+        return {
+          text: "Aqui estarão as traduções e versões realizadas por Cauan. Clique em um título para ver o texto completo.",
+        };
       case "revisoes":
-        return { text: "Aqui estarão as revisões e edições literárias, técnicas e acadêmicas." };
+        return {
+          text: "Aqui estarão as revisões e edições literárias, técnicas e acadêmicas.",
+        };
       case "servicos":
         return { text: "Serviços oferecidos, pacotes, prazos e diferenciais." };
       case "projetos":
-        return { text: "Projetos e conteúdos autorais — ensaios, artigos, vídeos, colaborações." };
+        return {
+          text: "Projetos e conteúdos autorais — ensaios, artigos, vídeos, colaborações.",
+        };
       case "videos":
-        return { text: "Vídeos e aparições — com YouTube embed para assistir aqui mesmo." };
+        return {
+          text: "Vídeos e aparições — com YouTube embed para assistir aqui mesmo.",
+        };
       default:
         return { text: "" };
     }
@@ -219,8 +257,12 @@ export default function Home() {
         <h3 className="font-semibold">{item.title}</h3>
         <p className="text-sm text-gray-300 mt-1">
           {item.type}
-          {Array.isArray(item.languages) && item.languages.length ? ` · ${item.languages.join(", ")}` : ""}
-          {Array.isArray(item.categories) && item.categories.length ? ` · ${item.categories.join(", ")}` : ""}
+          {Array.isArray(item.languages) && item.languages.length
+            ? ` · ${item.languages.join(", ")}`
+            : ""}
+          {Array.isArray(item.categories) && item.categories.length
+            ? ` · ${item.categories.join(", ")}`
+            : ""}
         </p>
       </div>
     </Link>
@@ -258,7 +300,8 @@ export default function Home() {
           </h1>
 
           <p className="text-gray-300 text-lg mb-8 leading-relaxed">
-            Bem-vindo ao meu portfólio. Tradução não é apenas transpor palavras — é recriar sentidos, estilo e intenção.
+            Bem-vindo ao meu portfólio. Tradução não é apenas transpor palavras
+            — é recriar sentidos, estilo e intenção.
           </p>
 
           {/* Navegação por abas */}
@@ -276,7 +319,9 @@ export default function Home() {
                   key={b.key}
                   onClick={() => setTab(b.key)}
                   className={`font-semibold px-5 py-2 rounded-full shadow-md transition ${
-                    active ? "bg-yellow-400 text-black" : "bg-yellow-500 hover:bg-yellow-400 text-black"
+                    active
+                      ? "bg-yellow-400 text-black"
+                      : "bg-yellow-500 hover:bg-yellow-400 text-black"
                   }`}
                   aria-pressed={active}
                 >
@@ -294,7 +339,9 @@ export default function Home() {
               {/* TRADUÇÕES */}
               {activeSection === "traducoes" && (
                 <>
-                  {isAdmin && <InlineTranslationForm onCreated={reloadTranslations} />}
+                  {isAdmin && (
+                    <InlineTranslationForm onCreated={reloadTranslations} />
+                  )}
 
                   {loadingTranslations ? (
                     <p className="mt-3">Carregando traduções...</p>
@@ -303,27 +350,39 @@ export default function Home() {
                       {translations.map((t) => {
                         const opened = selectedTranslation?.id === t.id;
                         return (
-                          <li key={t.id} className="bg-white/5 border border-white/10 rounded-lg">
+                          <li
+                            key={t.id}
+                            className="bg-white/5 border border-white/10 rounded-lg"
+                          >
                             <button
                               className="w-full text-left p-3 hover:bg-white/10 transition flex items-center justify-between"
-                              onClick={() => setSelectedTranslation(opened ? null : t)}
-                              title={opened ? "Ocultar conteúdo" : "Ver conteúdo"}
+                              onClick={() =>
+                                setSelectedTranslation(opened ? null : t)
+                              }
+                              title={
+                                opened ? "Ocultar conteúdo" : "Ver conteúdo"
+                              }
                             >
                               <span className="font-semibold">{t.title}</span>
                               <span className="text-xs text-gray-400 ml-3">
                                 {t.published_at
-                                  ? new Date(t.published_at).toLocaleDateString("pt-BR", {
-                                      day: "2-digit",
-                                      month: "short",
-                                      year: "numeric",
-                                    })
+                                  ? new Date(t.published_at).toLocaleDateString(
+                                      "pt-BR",
+                                      {
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                      }
+                                    )
                                   : ""}
                               </span>
                             </button>
 
                             {opened && t.content && (
                               <div className="px-3 pb-3">
-                                <p className="text-gray-300 whitespace-pre-wrap">{t.content}</p>
+                                <p className="text-gray-300 whitespace-pre-wrap">
+                                  {t.content}
+                                </p>
                                 <div className="mt-2">
                                   <button
                                     className="text-yellow-400 text-sm hover:underline"
@@ -339,7 +398,9 @@ export default function Home() {
                       })}
                     </ul>
                   ) : (
-                    <p className="text-gray-300 mt-3">Nenhuma tradução disponível.</p>
+                    <p className="text-gray-300 mt-3">
+                      Nenhuma tradução disponível.
+                    </p>
                   )}
                 </>
               )}
@@ -347,23 +408,31 @@ export default function Home() {
               {/* REVISÕES */}
               {activeSection === "revisoes" && (
                 <>
-                  {isAdmin && <InlineRevisionForm onCreated={reloadRevisions} />}
+                  {isAdmin && (
+                    <InlineRevisionForm onCreated={reloadRevisions} />
+                  )}
 
                   {loadingRevisions ? (
                     <p className="mt-3">Carregando revisões...</p>
                   ) : revisions.length > 0 ? (
                     <ul className="space-y-3 mt-4">
                       {revisions.map((r) => (
-                        <li key={r.id} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                        <li
+                          key={r.id}
+                          className="p-4 rounded-lg bg-white/5 border border-white/10"
+                        >
                           <div className="flex items-start justify-between gap-3">
                             <p className="font-semibold">{r.title}</p>
                             <span className="text-xs text-gray-400">
                               {r.published_at
-                                ? new Date(r.published_at).toLocaleDateString("pt-BR", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  })
+                                ? new Date(r.published_at).toLocaleDateString(
+                                    "pt-BR",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    }
+                                  )
                                 : ""}
                             </span>
                           </div>
@@ -376,7 +445,9 @@ export default function Home() {
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-gray-300 mt-3">Nenhuma revisão disponível.</p>
+                    <p className="text-gray-300 mt-3">
+                      Nenhuma revisão disponível.
+                    </p>
                   )}
                 </>
               )}
@@ -391,17 +462,28 @@ export default function Home() {
                   ) : services.length > 0 ? (
                     <ul className="grid md:grid-cols-2 gap-4 mt-4">
                       {services.map((s) => (
-                        <li key={s.id} className="p-4 rounded-xl bg-white/5 border border-white/10">
+                        <li
+                          key={s.id}
+                          className="p-4 rounded-xl bg-white/5 border border-white/10"
+                        >
                           <p className="font-semibold">{s.title}</p>
-                          {s.price_text && <p className="text-yellow-300 text-sm mt-1">{s.price_text}</p>}
+                          {s.price_text && (
+                            <p className="text-yellow-300 text-sm mt-1">
+                              {s.price_text}
+                            </p>
+                          )}
                           {s.description && (
-                            <p className="text-gray-300 text-sm mt-2 whitespace-pre-wrap">{s.description}</p>
+                            <p className="text-gray-300 text-sm mt-2 whitespace-pre-wrap">
+                              {s.description}
+                            </p>
                           )}
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-gray-300 mt-3">Nenhum serviço disponível.</p>
+                    <p className="text-gray-300 mt-3">
+                      Nenhum serviço disponível.
+                    </p>
                   )}
                 </>
               )}
@@ -420,7 +502,9 @@ export default function Home() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-300 mt-3">Nenhum projeto disponível.</p>
+                    <p className="text-gray-300 mt-3">
+                      Nenhum projeto disponível.
+                    </p>
                   )}
                 </>
               )}
@@ -437,7 +521,10 @@ export default function Home() {
                       {videos.map((v) => {
                         const vid = extractYouTubeId(v.youtube_url);
                         return (
-                          <div key={v.id} className="rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                          <div
+                            key={v.id}
+                            className="rounded-xl overflow-hidden border border-white/10 bg-white/5"
+                          >
                             <Link to={`/videos/${v.slug || v.id}`}>
                               <div className="aspect-video w-full bg-black/30">
                                 {vid ? (
@@ -456,16 +543,22 @@ export default function Home() {
                               </div>
                             </Link>
                             <div className="p-3">
-                              <Link to={`/videos/${v.slug || v.id}`} className="font-semibold hover:text-yellow-300">
+                              <Link
+                                to={`/videos/${v.slug || v.id}`}
+                                className="font-semibold hover:text-yellow-300"
+                              >
                                 {v.title}
                               </Link>
                               {v.published_at && (
                                 <p className="text-xs text-gray-400 mt-1">
-                                  {new Date(v.published_at).toLocaleDateString("pt-BR", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  })}
+                                  {new Date(v.published_at).toLocaleDateString(
+                                    "pt-BR",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    }
+                                  )}
                                 </p>
                               )}
                             </div>
@@ -474,7 +567,9 @@ export default function Home() {
                       })}
                     </div>
                   ) : (
-                    <p className="text-gray-300 mt-3">Nenhum vídeo disponível.</p>
+                    <p className="text-gray-300 mt-3">
+                      Nenhum vídeo disponível.
+                    </p>
                   )}
                 </>
               )}
@@ -483,9 +578,16 @@ export default function Home() {
         </div>
 
         {/* Foto */}
-        <div className="flex justify-center md:justify-end" data-aos="fade-left">
+        <div
+          className="flex justify-center md:justify-end"
+          data-aos="fade-left"
+        >
           <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-yellow-400 shadow-xl">
-            <img src={fotoCauan} alt="Cauan Lacerda" className="w-full h-full object-cover" />
+            <img
+              src={fotoCauan}
+              alt="Cauan Lacerda"
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
       </main>
@@ -494,13 +596,18 @@ export default function Home() {
       <section className="relative z-10 px-4 w-full max-w-6xl mx-auto pb-16">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">Destaques</h2>
-          <Link to="/projects" className="text-yellow-400 hover:underline">Ver todos</Link>
+          <Link to="/projects" className="text-yellow-400 hover:underline">
+            Ver todos
+          </Link>
         </div>
 
         {loadingFeat ? (
           <div className="grid gap-4 md:grid-cols-2">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-48 rounded-xl bg-white/10 animate-pulse" />
+              <div
+                key={i}
+                className="h-48 rounded-xl bg-white/10 animate-pulse"
+              />
             ))}
           </div>
         ) : errorFeat ? (

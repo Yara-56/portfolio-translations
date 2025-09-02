@@ -4,7 +4,11 @@ import { supabase } from '../lib/supabase';
 
 const EditProject = () => {
   const { id } = useParams(); // Pega o ID do projeto pela URL
-  const [project, setProject] = useState(null);
+  const [project, setProject] = useState({
+    title: '',
+    description: '',
+    // Adicione outros campos aqui, se necessário
+  });
 
   useEffect(() => {
     // Pega os dados do projeto pelo ID
@@ -40,7 +44,8 @@ const EditProject = () => {
     }
   };
 
-  if (!project) {
+  // Verificação condicional: se o projeto não estiver carregado, exibe mensagem de carregamento
+  if (!project || !project.title) {
     return <p>Carregando projeto...</p>;
   }
 
