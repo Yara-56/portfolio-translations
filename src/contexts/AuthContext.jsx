@@ -1,42 +1,50 @@
 // src/contexts/AuthContext.jsx
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-const AuthCtx = createContext({
-  isAdmin: false,
-  signIn: () => {},
-  signOut: () => {},
-});
+// ⚠️ Troque a senha aqui ou use variável de ambiente:
+const ADMIN_PASS = process.env.REACT_APP_ADMIN_PASS || "Cauan1980";
+
+const AuthCtx = createContext(null);
 
 export function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // restaura do localStorage
   useEffect(() => {
-    // Quando abre o site, lê do localStorage
     const saved = localStorage.getItem("isAdmin");
     setIsAdmin(saved === "true");
   }, []);
 
-  function signIn(password) {
-    if (password === "Cauan1980") {
-      localStorage.setItem("isAdmin", "true");
+  const signIn = async (password) => {
+    if (!ADMIN_PASS) {
+      return { success: false, error: "ADMIN_PASS não configurada." };
+    }
+    if (String(password) === String(ADMIN_PASS)) {
       setIsAdmin(true);
+      localStorage.setItem("isAdmin", "true");
       return { success: true };
     }
-    return { success: false, error: "Senha incorreta, tente novamente." };
-  }
+    return { success: false, error: "Senha incorreta." };
+  };
 
-  function signOut() {
-    localStorage.removeItem("isAdmin");
+  const signOut = async () => {
     setIsAdmin(false);
-  }
+    localStorage.removeItem("isAdmin");
+    return { success: true };
+  };
 
-  return (
-    <AuthCtx.Provider value={{ isAdmin, signIn, signOut }}>
-      {children}
-    </AuthCtx.Provider>
-  );
+  const value = useMemo(() => ({ isAdmin, signIn, signOut }), [isAdmin]);
+
+  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 
 export function useAuth() {
-  return useContext(AuthCtx);
+  const ctx = useContext(AuthCtx);
+  if (ctx) return ctx;
+  // fallback seguro se esquecer do Provider
+  return {
+    isAdmin: false,
+    signIn: async () => ({ success: false, error: "AuthProvider ausente." }),
+    signOut: async () => ({ success: true }),
+  };
 }

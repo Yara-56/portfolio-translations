@@ -6,18 +6,23 @@ export default function LoginModal({ open, onClose }) {
   const { signIn } = useAuth();
   const [password, setPassword] = useState("");
   const [err, setErr] = useState(null);
+  const [busy, setBusy] = useState(false);
 
   if (!open) return null;
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
-    const { success, error } = signIn(password);
+    setErr(null);
+    setBusy(true);
+    const resp = await signIn(password);
+    const { success = false, error = null } = resp || {};
+    setBusy(false);
+
     if (success) {
       setPassword("");
-      setErr(null);
-      onClose();
+      onClose?.();
     } else {
-      setErr(error);
+      setErr(error || "Não foi possível entrar.");
     }
   }
 
@@ -35,8 +40,12 @@ export default function LoginModal({ open, onClose }) {
             required
           />
           {err && <p className="text-red-600 text-sm">{err}</p>}
-          <button className="w-full rounded-lg py-2 font-semibold bg-yellow-400">
-            Entrar
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded-lg py-2 font-semibold bg-yellow-400 disabled:opacity-60"
+          >
+            {busy ? "Entrando…" : "Entrar"}
           </button>
         </form>
         <button
