@@ -1,59 +1,38 @@
-// src/components/LoginModal.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import LoginModal from "../components/LoginModal";
 
-export default function LoginModal({ open, onClose }) {
-  const { signIn } = useAuth();
-  const [password, setPassword] = useState("");
-  const [err, setErr] = useState(null);
-  const [busy, setBusy] = useState(false);
+export default function Home() {
+  const { user, signOut } = useAuth(); // Pegando a informação do usuário autenticado
+  const [openLoginModal, setOpenLoginModal] = useState(false); // Controle do modal de login
 
-  if (!open) return null;
-
-  async function submit(e) {
-    e.preventDefault();
-    setErr(null);
-    setBusy(true);
-    const resp = await signIn(password);
-    const { success = false, error = null } = resp || {};
-    setBusy(false);
-
-    if (success) {
-      setPassword("");
-      onClose?.();
-    } else {
-      setErr(error || "Não foi possível entrar.");
+  // useEffect sempre será chamado, não condicional
+  useEffect(() => {
+    if (!user) {
+      // Se não houver usuário, o modal de login precisa ser mostrado
+      setOpenLoginModal(true);
+    } else if (user.email !== "email_do_seu_irmao@dominio.com") {
+      // Se o e-mail não for o do seu irmão, deslogue
+      signOut();
+      alert("Você não tem permissão para acessar.");
     }
-  }
+  }, [user, signOut]); // Garantir que a dependência seja sempre observada
+
+  // Lógica para abrir o modal quando o usuário não está autenticado
+  const handleCloseLoginModal = () => {
+    setOpenLoginModal(false);
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[1000]">
-      <div className="bg-white text-black rounded-2xl p-6 w-full max-w-sm shadow-xl">
-        <h3 className="text-xl font-bold mb-4">Entrar</h3>
-        <form onSubmit={submit} className="space-y-3">
-          <input
-            className="w-full border rounded-lg p-2"
-            placeholder="Senha"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          {err && <p className="text-red-600 text-sm">{err}</p>}
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded-lg py-2 font-semibold bg-yellow-400 disabled:opacity-60"
-          >
-            {busy ? "Entrando…" : "Entrar"}
-          </button>
-        </form>
-        <button
-          onClick={onClose}
-          className="mt-3 w-full text-center text-sm text-gray-600"
-        >
-          Cancelar
-        </button>
+    <div>
+      {/* Condicionalmente mostrando o modal de login */}
+      <LoginModal open={openLoginModal} onClose={handleCloseLoginModal} />
+
+      {/* Conteúdo da página Home */}
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white overflow-hidden relative">
+        <main className="relative z-10 px-4 w-full max-w-6xl mx-auto flex-grow py-24 grid grid-cols-1 md:grid-cols-2 items-center gap-10">
+          {/* Resto do conteúdo da página */}
+        </main>
       </div>
     </div>
   );

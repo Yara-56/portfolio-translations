@@ -1,39 +1,65 @@
 // src/contexts/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-
-// ⚠️ Troque a senha aqui ou use variável de ambiente:
-const ADMIN_PASS = process.env.REACT_APP_ADMIN_PASS || "Cauan1980";
+import { supabase } from "../lib/supabase";
 
 const AuthCtx = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // restaura do localStorage
+  // CRA: use somente process.env.REACT_APP_*
+  const ADMIN_EMAIL = (process.env.REACT_APP_ADMIN_EMAIL || "").toLowerCase();
+
+  // Carrega sessão atual e escuta mudanças
   useEffect(() => {
-    const saved = localStorage.getItem("isAdmin");
-    setIsAdmin(saved === "true");
+    let mounted = true;
+
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!mounted) return;
+      setSession(data?.session ?? null);
+      setLoading(false);
+    })();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
+      setSession(s ?? null);
+    });
+
+    return () => sub?.subscription?.unsubscribe?.();
   }, []);
 
-  const signIn = async (password) => {
-    if (!ADMIN_PASS) {
-      return { success: false, error: "ADMIN_PASS não configurada." };
-    }
-    if (String(password) === String(ADMIN_PASS)) {
-      setIsAdmin(true);
-      localStorage.setItem("isAdmin", "true");
+  const user = session?.user ?? null;
+  const email = (user?.email || "").toLowerCase();
+  const isAdmin = !!user && (!!ADMIN_EMAIL ? email === ADMIN_EMAIL : true);
+
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin },
+      });
+      if (error) return { success: false, error: error.message };
       return { success: true };
+    } catch (e) {
+      return { success: false, error: "Erro ao iniciar login com Google." };
     }
-    return { success: false, error: "Senha incorreta." };
   };
 
   const signOut = async () => {
-    setIsAdmin(false);
-    localStorage.removeItem("isAdmin");
-    return { success: true };
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch {
+      return { success: false, error: "Erro ao sair." };
+    }
   };
 
-  const value = useMemo(() => ({ isAdmin, signIn, signOut }), [isAdmin]);
+  const value = useMemo(
+    () => ({ loading, session, user, isAdmin, signInWithGoogle, signOut }),
+    [loading, session, user, isAdmin]
+  );
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
@@ -41,10 +67,13 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   const ctx = useContext(AuthCtx);
   if (ctx) return ctx;
-  // fallback seguro se esquecer do Provider
+  // Fallback seguro se esquecer do provider
   return {
+    loading: false,
+    session: null,
+    user: null,
     isAdmin: false,
-    signIn: async () => ({ success: false, error: "AuthProvider ausente." }),
+    signInWithGoogle: async () => ({ success: false, error: "AuthProvider ausente." }),
     signOut: async () => ({ success: true }),
   };
 }
