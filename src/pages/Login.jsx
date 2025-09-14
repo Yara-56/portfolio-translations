@@ -11,7 +11,6 @@ export default function Login() {
       setLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
       if (error) throw error;
-      // Redireciona para a área de admin após o login
       navigate("/admin");
     } catch (error) {
       alert("Erro ao fazer login: " + error.message);
